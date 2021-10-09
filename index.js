@@ -16,11 +16,31 @@ class Game {
         this.playerTurn = playerTurn;
         this.cpuMark = cpuMark;
         this.boardLength = boardLength;
-        this.boardState = {};
+        // this.boardState = {};
+        this.boardStateArray = this.createBoardStateArray(boardLength);
+        this.turn = 0;
+        this.inProgress = true;
     }
 
     addBoardState(num, mark){
         this.boardState[num] = mark;
+    }
+
+    addBoardStateArray(num, mark){
+        console.log(this.boardStateArray);
+        let quotient = Math.floor(num / this.boardLength);
+        let remind = num % this.boardLength;
+        console.log(quotient);
+        console.log(remind);
+        this.boardStateArray[quotient][remind] = mark;
+    }
+
+    createBoardStateArray(boardLength){
+        let array = new Array(boardLength);
+        for(let i = 0; i < boardLength; i++){
+            array[i] = new Array(boardLength);
+        }
+        return array;
     }
 }
 
@@ -51,7 +71,7 @@ class View {
             `
                 <div id="top-text" class = "d-flex justify-content-center">
                     <div style = "padding: 100px 40% 0px 40%">
-                        <p id="nextPlayer">NextPlayer: ${playerName}</p>
+                        <p id="nextPlayer" class="w-100">NextPlayer: ${playerName}</p>
                     </div>
                 </div>
                 <div class="d-flex justify-content-center align-items-center">
@@ -76,15 +96,18 @@ class View {
 
 // クリック時にマークを表示
 function checkMark(target,game){
-    console.log(game);
-    if(game.playerTurn){
-        target.innerText = game.playerMark;
-        document.getElementById("nextPlayer").innerText = `NextPlayer: CPU`;
-        game.playerTurn = false;
-    } else {
-        target.innerText = game.cpuMark;
-        document.getElementById("nextPlayer").innerText = `NextPlayer: ${game.playerName}`;
-        game.playerTurn = true;
+    // マス目が埋まっていない場合のみ処理を実行
+    if(target.innerText == "" && game.inProgress){
+        game.turn++;
+        if(game.playerTurn){
+            target.innerText = game.playerMark;
+            document.getElementById("nextPlayer").innerText = `NextPlayer: CPU`;
+            game.playerTurn = false;
+        } else {
+            target.innerText = game.cpuMark;
+            document.getElementById("nextPlayer").innerText = `NextPlayer: ${game.playerName}`;
+            game.playerTurn = true;
+        }
     }
 }
 
@@ -103,7 +126,7 @@ function startGame(){
         marks[document.querySelectorAll(`input[name="mark"]:checked`)[0].id],
         true,
         "×",
-        document.getElementById("length").value,
+        parseInt(document.getElementById("length").value),
     );
 
     // マス目の部分
@@ -115,8 +138,20 @@ function startGame(){
         squares[i].setAttribute('data-square', i);
         squares[i].addEventListener("click", function(event){
             let currentMark = (game.playerTurn)? game.playerMark : game.cpuMark;
-            game.addBoardState(event.target.dataset.square, currentMark);
+            // game.addBoardState(event.target.dataset.square, currentMark);
+            game.addBoardStateArray(event.target.dataset.square, currentMark);
             checkMark(event.target, game);
+            let winner = checkWinner(game);
+            if(winner != null){
+                game.inProgress = false;
+                document.getElementById("nextPlayer").innerText = winner + "の勝利！！";
+                alert(winner + "の勝利！！！");
+            }
+            if(game.turn == Math.pow(game.boardLength, 2) && winner == null){
+                if(game.inProgress) alert("引き分け！");
+                game.inProgress = false;
+                document.getElementById("nextPlayer").innerText = "引き分け！";
+            }
         });
     }
 
