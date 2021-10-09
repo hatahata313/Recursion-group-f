@@ -1,4 +1,11 @@
 .square{
     width: 80px;
     height: 80px;
+    margin: 0.3rem;
+    border-radius: 10%;
+    color: white;
+}
+
+#board {
+    background-color: #0d3a13;
 }
