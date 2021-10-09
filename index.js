@@ -155,5 +155,3 @@ function startGame() {
   // 2ページ目表示
   config.target.append(gamePage);
 }
-
-startGame();
